@@ -47,7 +47,7 @@ bot.on('poll_answer', async (answer) => {
   if (pollService.isEverybodyAnswered(poll.chat_id, group.getSize())) {
     console.log('all answers received');
     const res = await axios
-      .post(FLASK_API_URL, group.users);
+      .post(FLASK_API_URL, { users: group.users });
     console.log(res);
     pollService.deletePollsByChat(poll.chat_id);
     groupService.deleteGroup(poll.chat_id);
