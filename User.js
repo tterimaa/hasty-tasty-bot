@@ -5,11 +5,7 @@ class User {
     this.payment = '';
   }
 
-  addCuisine(name) {
-    this.cuisine.push(name);
-  }
-
-  addAnswer(poll, answer) {
+  saveAnswer(poll, answer) {
     switch (poll.category) {
       case 'cuisine':
         answer.option_ids.forEach((id) => {
@@ -20,7 +16,7 @@ class User {
         this.payment = poll.options[answer.option_ids[0]];
         break;
       default:
-        throw new Error('Error in User class addAnswer');
+        throw new Error('Error in User class saveAnswer');
     }
   }
 }

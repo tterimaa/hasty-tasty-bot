@@ -12,4 +12,10 @@ const findGroup = (chatId) => {
   throw new Error('Group not found');
 };
 
-module.exports = { addGroup, findGroup };
+const deleteGroup = (chatId) => {
+  if (groups[chatId]) delete groups[chatId];
+};
+
+module.exports = {
+  groups, addGroup, findGroup, deleteGroup,
+};
