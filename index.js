@@ -1,11 +1,10 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
+const aitoService = require('./aitoService');
 const groupService = require('./groupService');
 const pollService = require('./pollService');
 
 const token = process.env.BOT_TOKEN;
-const FLASK_API_URL = 'http://127.0.0.1:5000/json';
 
 const bot = new TelegramBot(token, { polling: true });
 
@@ -28,8 +27,12 @@ bot.onText(/\/hungry/, (msg) => {
 
 bot.onText(/\/done/, (msg) => {
   pollService.sendPolls(msg.chat.id, bot);
-  const group = groupService.findGroup(msg.chat.id);
-  bot.sendMessage(msg.chat.id, `I need answers from ${group.getSize()} persons to continue. Please say /quit if somebody is unable to answer`);
+  try {
+    const group = groupService.findGroup(msg.chat.id);
+    bot.sendMessage(msg.chat.id, `I need answers from ${group.getSize()} persons to continue. Please say /quit if somebody is unable to answer`);
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 bot.onText(/\/quit/, (msg) => {
@@ -38,20 +41,20 @@ bot.onText(/\/quit/, (msg) => {
 });
 
 bot.on('poll_answer', async (answer) => {
-  const poll = pollService.openPolls[answer.poll_id];
-  pollService.updatePoll(answer);
-  bot.sendMessage(poll.chat_id, `${answer.user.first_name} answered a poll ${poll.question} with answer ${answer.option_ids.map((id) => poll.options[id].text)}`);
-  const group = groupService.findGroup(poll.chat_id);
-  const user = group.getUser(answer.user.id);
-  user.saveAnswer(poll, answer);
-  if (pollService.isEverybodyAnswered(poll.chat_id, group.getSize())) {
-    console.log('all answers received');
-    const res = await axios
-      .post(FLASK_API_URL, { users: group.users });
-    console.log(res);
-    pollService.deletePollsByChat(poll.chat_id);
-    groupService.deleteGroup(poll.chat_id);
+  try {
+    const poll = pollService.getOpenPoll(answer.poll_id);
+    pollService.updatePoll(answer);
+    const group = groupService.findGroup(poll.chat_id);
+    const user = group.getUser(answer.user.id);
+    user.saveAnswer(poll, answer);
+
+    if (pollService.isEverybodyAnswered(poll.chat_id, group.getSize())) {
+      const res = await aitoService.callAito({ users: group.users });
+      console.log(`Response from aito ${res}`);
+      pollService.deletePollsByChat(poll.chat_id);
+      groupService.deleteGroup(poll.chat_id);
+    }
+  } catch (error) {
+    console.error(error);
   }
-  console.log(pollService.openPolls);
-  console.log(groupService.groups);
 });

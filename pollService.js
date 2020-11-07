@@ -15,6 +15,11 @@ const polls = [
   },
 ];
 
+const getOpenPoll = (pollId) => {
+  if (openPolls[pollId]) return openPolls[pollId];
+  throw new Error('Poll not found');
+};
+
 const findOpenPollsByChat = (chatId) => {
   const filtered = Object.values(openPolls)
     .filter((poll) => poll.chat_id === chatId);
@@ -47,5 +52,5 @@ const sendPolls = async (chatId, bot) => polls.map(async ({ category, question, 
 });
 
 module.exports = {
-  openPolls, sendPolls, isEverybodyAnswered, updatePoll, deletePollsByChat,
+  openPolls, getOpenPoll, sendPolls, isEverybodyAnswered, updatePoll, deletePollsByChat,
 };

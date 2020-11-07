@@ -13,7 +13,9 @@ class Group {
   }
 
   getUser(id) {
-    return this.users.find((usr) => usr.id === id);
+    const userToReturn = this.users.find((usr) => usr.id === id);
+    if (userToReturn) return userToReturn;
+    throw new Error('User not found in group');
   }
 
   getSize() {
