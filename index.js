@@ -36,8 +36,11 @@ bot.on('poll_answer', async (answer) => {
   pollService.updatePoll(answer);
   bot.sendMessage(poll.chat_id, `${answer.user.first_name} answered a poll ${poll.question} with answer ${answer.option_ids.map((id) => poll.options[id].text)}`);
   const group = groupService.findGroup(poll.chat_id);
+  const user = group.getUser(answer.user.id);
+  user.addAnswer(poll, answer);
   if (pollService.isEverybodyAnswered(poll.chat_id, group.getSize())) {
     console.log('all answers received');
+    console.group(group);
     pollService.deletePollsByChat(poll.chat_id);
   }
   console.log(pollService.openPolls);

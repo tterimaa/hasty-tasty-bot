@@ -1,13 +1,17 @@
+const Poll = require('./Poll');
+
 const openPolls = {};
 
 const polls = [
   {
+    category: 'cuisine',
     question: 'What kind of food would you like?',
-    options: ['mexican', 'indian', 'lihapulla'],
+    options: ['Mexican', 'Indian', 'Lihapulla'],
   },
   {
-    question: 'What kind of food would you like?',
-    options: ['mexican', 'indian', 'lihapulla'],
+    category: 'payment',
+    question: 'How would you like to pay?',
+    options: ['cash', 'card'],
   },
 ];
 
@@ -28,7 +32,7 @@ const isEverybodyAnswered = (chatId, membersCount) => {
 
 const updatePoll = (answer) => {
   const poll = openPolls[answer.poll_id];
-  poll.total_voter_count += 1;
+  poll.incrementVoters();
 };
 
 const deletePollsByChat = (chatId) => {
@@ -36,14 +40,11 @@ const deletePollsByChat = (chatId) => {
   open.forEach((poll) => delete openPolls[poll.id]);
 };
 
-const sendPolls = async (chatId, bot) => {
-  // eslint-disable-next-line max-len
-  const promises = polls.map(({ question, options }) => bot.sendPoll(chatId, question, options, { is_anonymous: false }));
-  const responses = await Promise.all(promises);
-  responses.forEach((res) => {
-    openPolls[res.poll.id] = { chat_id: chatId, ...res.poll };
-  });
-};
+const sendPolls = async (chatId, bot) => polls.map(async ({ category, question, options }) => {
+  const res = await bot.sendPoll(chatId, question, options, { is_anonymous: false });
+  const newPoll = new Poll(res.poll.id, chatId, category, question, options);
+  openPolls[newPoll.id] = newPoll;
+});
 
 module.exports = {
   openPolls, sendPolls, isEverybodyAnswered, updatePoll, deletePollsByChat,

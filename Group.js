@@ -12,6 +12,10 @@ class Group {
     this.users.push(user);
   }
 
+  getUser(id) {
+    return this.users.find((usr) => usr.id === id);
+  }
+
   getSize() {
     return this.users.length;
   }
