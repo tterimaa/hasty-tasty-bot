@@ -17,10 +17,23 @@ const findOpenPollsByChat = (chatId) => {
   return filtered;
 };
 
-const isEverybodyAnswered = (chatId) => {
+const isEverybodyAnswered = (chatId, membersCount) => {
+  let pollsCompleted = 0;
   findOpenPollsByChat(chatId).forEach((poll) => {
-    console.log(poll.total_voter_count);
+    if (poll.total_voter_count === membersCount) pollsCompleted += 1;
   });
+  if (pollsCompleted === polls.length) return true;
+  return false;
+};
+
+const updatePoll = (answer) => {
+  const poll = openPolls[answer.poll_id];
+  poll.total_voter_count += 1;
+};
+
+const deletePollsByChat = (chatId) => {
+  const open = findOpenPollsByChat(chatId);
+  open.forEach((poll) => delete openPolls[poll.id]);
 };
 
 const sendPolls = async (chatId, bot) => {
@@ -32,4 +45,6 @@ const sendPolls = async (chatId, bot) => {
   });
 };
 
-module.exports = { openPolls, sendPolls, isEverybodyAnswered };
+module.exports = {
+  openPolls, sendPolls, isEverybodyAnswered, updatePoll, deletePollsByChat,
+};
