@@ -40,6 +40,16 @@ bot.onText(/\/quit/, (msg) => {
   pollService.deleteGroup(msg.chat.id);
 });
 
+const sendRestaurantInfo = async (chatId, data) => {
+  const arr = Object.values(data).slice(0, 3);
+  arr.forEach(async (restaurant) => {
+    if (restaurant.name && restaurant.latitude && restaurant.longitude) {
+      await bot.sendMessage(chatId, restaurant.name);
+      await bot.sendLocation(chatId, restaurant.latitude, restaurant.longitude);
+    }
+  });
+};
+
 bot.on('poll_answer', async (answer) => {
   try {
     const poll = pollService.getOpenPoll(answer.poll_id);
@@ -51,6 +61,7 @@ bot.on('poll_answer', async (answer) => {
     if (pollService.isEverybodyAnswered(poll.chat_id, group.getSize())) {
       const res = await aitoService.callAito({ users: group.users });
       console.log(`Response from aito ${res}`);
+      sendRestaurantInfo(poll.chat_id, res.data);
       pollService.deletePollsByChat(poll.chat_id);
       groupService.deleteGroup(poll.chat_id);
     }

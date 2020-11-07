@@ -9,7 +9,9 @@ class Group {
 
   addUser(id) {
     const user = new User(id);
-    this.users.push(user);
+    if (!this.users.map((usr) => usr.id).includes(id)) {
+      this.users.push(user);
+    }
   }
 
   getUser(id) {
