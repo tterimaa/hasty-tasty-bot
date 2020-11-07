@@ -9,7 +9,7 @@ const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/food/, (msg) => {
-  bot.sendMessage(msg.chat.id, 'Let\'s find out a restaurant for your group');
+  bot.sendMessage(msg.chat.id, 'Let’s find you all a place to eat!');
   groupService.addGroup(msg.chat.id);
   bot.sendMessage(msg.chat.id, 'Please say /hungry if you would like to join');
 });
@@ -19,16 +19,16 @@ bot.onText(/\/hungry/, (msg) => {
   try {
     group = groupService.findGroup(msg.chat.id);
     group.addUser(msg.from.id);
-    bot.sendMessage(msg.chat.id, `There is ${group.getSize()} hungry persons in the group. Please say /done if no one else is hungry`);
+    bot.sendMessage(msg.chat.id, `Looks like ${group.getSize()} persons are up for a meal. Say /done if no one else is hungry`);
   } catch (err) {
     bot.sendMessage('If you want me to suggest a restaurant for your group, please say "/food" first');
   }
 });
 
 bot.onText(/\/done/, (msg) => {
-  pollService.sendPolls(msg.chat.id, bot);
   try {
     const group = groupService.findGroup(msg.chat.id);
+    pollService.sendPolls(msg.chat.id, bot);
     bot.sendMessage(msg.chat.id, `I need answers from ${group.getSize()} persons to continue. Please say /quit if somebody is unable to answer`);
   } catch (error) {
     console.error(error);
@@ -40,14 +40,15 @@ bot.onText(/\/quit/, (msg) => {
   pollService.deleteGroup(msg.chat.id);
 });
 
-const sendRestaurantInfo = async (chatId, data) => {
-  const arr = Object.values(data).slice(0, 3);
-  arr.forEach(async (restaurant) => {
-    if (restaurant.name && restaurant.latitude && restaurant.longitude) {
-      await bot.sendMessage(chatId, restaurant.name);
-      await bot.sendLocation(chatId, restaurant.latitude, restaurant.longitude);
-    }
-  });
+const sendRestaurantInfo = (chatId, data) => {
+  const arr = Object.values(data).slice(0, 2);
+  if (arr[0].latitude && arr[0].longitude && arr[0].latitude) {
+    bot.sendLocation(chatId, arr[0].latitude, arr[0].longitude);
+    bot.sendMessage(chatId, `<b>${arr[0].name}</b>`, { parse_mode: 'HTML' });
+  } else if (arr[1].latitude && arr[1].longitude && arr[1].latitude) {
+    bot.sendLocation(chatId, arr[1].latitude, arr[1].longitude);
+    bot.sendMessage(chatId, arr[1].name);
+  }
 };
 
 bot.on('poll_answer', async (answer) => {
