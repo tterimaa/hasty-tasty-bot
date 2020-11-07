@@ -1,10 +1,11 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const cp = require('child_process');
+const axios = require('axios');
 const groupService = require('./groupService');
 const pollService = require('./pollService');
 
 const token = process.env.BOT_TOKEN;
+const FLASK_API_URL = 'http://127.0.0.1:5000/json';
 
 const bot = new TelegramBot(token, { polling: true });
 
@@ -32,19 +33,6 @@ bot.onText(/\/done/, (msg) => {
   pollService.sendPolls(msg.chat.id, bot);
 });
 
-const callPythonService = async (input) => {
-  let dataToSend;
-  const python = cp.spawn('python', ['script.py', input]);
-  python.stdout.on('data', (data) => {
-    console.log('Pipe data from python script');
-    dataToSend = data.toString();
-  });
-  python.on('close', (code) => {
-    console.log(`child process close all stdio with code ${code}`);
-    console.log(dataToSend);
-  });
-};
-
 bot.on('poll_answer', async (answer) => {
   const poll = pollService.openPolls[answer.poll_id];
   pollService.updatePoll(answer);
@@ -54,8 +42,10 @@ bot.on('poll_answer', async (answer) => {
   user.addAnswer(poll, answer);
   if (pollService.isEverybodyAnswered(poll.chat_id, group.getSize())) {
     console.log('all answers received');
-    console.group(group);
-    callPythonService(JSON.stringify(group.users));
+    console.group(group.users);
+    const res = await axios
+      .post(FLASK_API_URL, group.users);
+    console.log(res);
     pollService.deletePollsByChat(poll.chat_id);
   }
   console.log(pollService.openPolls);
