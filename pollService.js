@@ -6,12 +6,12 @@ const polls = [
   {
     category: 'cuisine',
     question: 'What kind of food would you like?',
-    options: ['Mexican', 'American', 'Burgers'],
+    options: ['Mexican', 'American', 'Burgers', 'Sushi', 'Pizzeria'],
   },
   {
     category: 'payment',
     question: 'How would you like to pay?',
-    options: ['cash', 'VISA'],
+    options: ['cash', 'VISA', 'MasterCard-Eurocard'],
   },
 ];
 

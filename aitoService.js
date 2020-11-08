@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const FLASK_API_URL = 'http://127.0.0.1:5000/json';
+const FLASK_API_URL = 'https://stormy-reef-57826.herokuapp.com/json';
 
 const callAito = async (object) => {
   const res = await axios.post(FLASK_API_URL, object);
