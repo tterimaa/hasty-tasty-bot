@@ -9,9 +9,13 @@ const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/food/, (msg) => {
-  bot.sendMessage(msg.chat.id, 'Let’s find you all a place to eat!');
-  groupService.addGroup(msg.chat.id);
-  bot.sendMessage(msg.chat.id, 'Please say /hungry if you would like to join');
+  try {
+    bot.sendMessage(msg.chat.id, 'Let’s find you all a place to eat!');
+    groupService.addGroup(msg.chat.id);
+    bot.sendMessage(msg.chat.id, 'Please say /hungry if you would like to join');
+  } catch (error) {
+    bot.sendMessage(msg.chat.id, 'Looks like you already asked me to find food for you. Say /quit to cancel the previous request');
+  }
 });
 
 bot.onText(/\/hungry/, (msg) => {
@@ -36,8 +40,13 @@ bot.onText(/\/done/, (msg) => {
 });
 
 bot.onText(/\/quit/, (msg) => {
-  pollService.deletePollsByChat(msg.chat.id);
-  pollService.deleteGroup(msg.chat.id);
+  try {
+    pollService.deletePollsByChat(msg.chat.id);
+    groupService.deleteGroup(msg.chat.id);
+  } catch (err) {
+    console.error(err);
+  }
+  bot.sendMessage(msg.chat.id, 'You canceled the request to find a restaurant. Say /food to start the process again');
 });
 
 const sendRestaurantInfo = (chatId, data) => {

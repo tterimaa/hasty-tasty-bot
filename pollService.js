@@ -21,9 +21,11 @@ const getOpenPoll = (pollId) => {
 };
 
 const findOpenPollsByChat = (chatId) => {
-  const filtered = Object.values(openPolls)
-    .filter((poll) => poll.chat_id === chatId);
-  return filtered;
+  const arr = Object.values(openPolls);
+  if (arr.length > 0) {
+    return arr.filter((poll) => poll.chat_id === chatId);
+  }
+  throw new Error(`No open polls for chat id ${chatId}`);
 };
 
 const isEverybodyAnswered = (chatId, membersCount) => {
@@ -42,6 +44,7 @@ const updatePoll = (answer) => {
 
 const deletePollsByChat = (chatId) => {
   const open = findOpenPollsByChat(chatId);
+  if (open.length === 0) throw new Error('There are no polls to delete');
   open.forEach((poll) => delete openPolls[poll.id]);
 };
 

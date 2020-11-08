@@ -3,6 +3,7 @@ const Group = require('./Group');
 const groups = {};
 
 const addGroup = (chatId) => {
+  if (groups[chatId]) throw new Error('Group already exists');
   const group = new Group(chatId);
   groups[chatId] = group;
 };
